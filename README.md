@@ -37,6 +37,6 @@ Thank you to all the contributors and the open-source community for their valuab
 For any questions or feedback, please feel free to reach out:
 
 - Email: yevgenphk@gmail.com
-- GitHub: [your-username](https://github.com/your-username)
+- GitHub: [SpellboundCoder](https://github.com/SpellboundCoder)
 
 ---
