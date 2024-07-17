@@ -23,11 +23,15 @@ class TypingMonitor:
             if not self.last_event.wait(timeout=self.timeout):
                 if self.on_timeout:
                     self.on_timeout()
-                    self.stopped = True
+                    self.stop()
 
     def reset_timer(self):
         self.last_event.set()
         self.last_event.clear()
+
+    def stop(self):
+        self.stopped = True
+        self.last_event.set()
 
 
 current_time_in_sec = round(time.time())
@@ -59,13 +63,13 @@ def main(page):
 
     list_view = ft.ListView(
         spacing=10,
-        width=400,
+        width=600,
         padding=20,
         auto_scroll=True)
 
     success_dlg = ft.AlertDialog(
         title=ft.Text("CONGRATULATIONS YOU'VE MADE IT!"),
-        on_dismiss=lambda e: on_dismiss(e, True)
+        on_dismiss=lambda e: on_dismiss(e, True, data=get_all_stories())
     )
 
     fail_dlg = ft.AlertDialog(
@@ -75,7 +79,7 @@ def main(page):
             ft.Row([ft.Text('Your progress is wiped out 😰', color=ft.colors.RED_900)],
                    alignment=ft.MainAxisAlignment.CENTER),
         ]),
-        on_dismiss=lambda e: on_dismiss(e, False)
+        on_dismiss=lambda e: on_dismiss(e, False, data=get_all_stories())
     )
 
     cupertino_picker = ft.CupertinoPicker(
@@ -90,15 +94,18 @@ def main(page):
     stories = get_all_stories()
     for story in stories:
         list_view.controls.append(ft.Text(value=story.text))
-        print(story.text)
 
-    def on_dismiss(e, success_: bool):
+    def on_dismiss(e, success_: bool, data):
         if success_:
             text = textfield.current.value
             add_story(
                 Story(text=text, date=today))
             column.current.visible = True
             container.current.visible = False
+            page.remove(list_view)
+            for text in data:
+                list_view.controls.append(ft.Text(text.text))
+            page.add(list_view)
             page.update()
 
         elif not success_:
@@ -141,7 +148,7 @@ def main(page):
             timer.current.value = f"{minutes_left}:{seconds_left}"
             timer.current.update()
         page.open(success_dlg)
-        typing_monitor.stopped = True
+        typing_monitor.stop()
 
     def start_writing():
 
@@ -151,7 +158,6 @@ def main(page):
         countdown(int(selected_time_ref.current.value))
 
     def on_change():
-        global typing_monitor
         if not typing_monitor.stopped:
             typing_monitor.reset_timer()
 
